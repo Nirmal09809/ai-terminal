@@ -40,13 +40,15 @@ func (f *Factory) Create(name string) (Provider, error) {
 		return NewAnthropicProvider(f.cfg.Provider.Anthropic)
 	case "ollama":
 		return NewOllamaProvider(f.cfg.Provider.Ollama)
+	case "demo":
+		return NewDemoProvider(), nil
 	default:
 		return NewGeminiProvider(f.cfg.Provider.Gemini)
 	}
 }
 
 func (f *Factory) GetAvailableProviders() []string {
-	return []string{"gemini", "openai", "anthropic", "ollama"}
+	return []string{"gemini", "openai", "anthropic", "ollama", "demo"}
 }
 
 type GeminiProvider struct {
@@ -761,5 +763,57 @@ func (p *OllamaProvider) Stream(ctx context.Context, req types.ProviderRequest, 
 			break
 		}
 	}
+	return nil
+}
+
+type DemoProvider struct{}
+
+func NewDemoProvider() *DemoProvider {
+	return &DemoProvider{}
+}
+
+func (p *DemoProvider) Name() string { return "demo" }
+
+func (p *DemoProvider) GetTools() []types.ToolDefinition {
+	return []types.ToolDefinition{
+		{Name: "shell", Description: "Execute shell commands", Parameters: types.ToolParameters{Type: "object", Properties: map[string]types.Property{"command": {Type: "string", Description: "Command"}}, Required: []string{"command"}}},
+		{Name: "read", Description: "Read file", Parameters: types.ToolParameters{Type: "object", Properties: map[string]types.Property{"path": {Type: "string", Description: "Path"}}, Required: []string{"path"}}},
+		{Name: "write", Description: "Write file", Parameters: types.ToolParameters{Type: "object", Properties: map[string]types.Property{"path": {Type: "string"}, "content": {Type: "string"}}, Required: []string{"path", "content"}}},
+		{Name: "glob", Description: "Find files", Parameters: types.ToolParameters{Type: "object", Properties: map[string]types.Property{"pattern": {Type: "string", Description: "Pattern"}}, Required: []string{"pattern"}}},
+	}
+}
+
+func (p *DemoProvider) Generate(ctx context.Context, req types.ProviderRequest) (*types.ProviderResponse, error) {
+	userInput := ""
+	for _, msg := range req.Messages {
+		if msg.Role == types.RoleUser {
+			userInput = msg.Content
+			break
+		}
+	}
+
+	response := "Demo Mode: I received your message: \"" + userInput + "\"\n\n"
+	response += "This is a demo provider. To use real AI:\n"
+	response += "1. Get API key from https://aistudio.google.com/app/apikey\n"
+	response += "2. Run: ai-terminal ask --api-key YOUR_KEY \"your question\"\n"
+	response += "3. Or set: export GEMINI_API_KEY=\"YOUR_KEY\"\n\n"
+	response += "Available tools: shell, read, write, glob, grep, search, and more..."
+
+	return &types.ProviderResponse{
+		Content:     response,
+		ToolCalls:   []types.ToolCall{},
+		FinishReason: "stop",
+	}, nil
+}
+
+func (p *DemoProvider) Stream(ctx context.Context, req types.ProviderRequest, onChunk func(types.StreamResponse)) error {
+	resp, err := p.Generate(ctx, req)
+	if err != nil {
+		return err
+	}
+	for _, ch := range resp.Content {
+		onChunk(types.StreamResponse{Content: string(ch)})
+	}
+	onChunk(types.StreamResponse{Done: true})
 	return nil
 }

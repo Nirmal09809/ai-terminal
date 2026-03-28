@@ -57,12 +57,14 @@ var (
 	model      string
 	verbose    bool
 	noColor    bool
+	apiKey     string
 )
 
 func init() {
 	rootCmd.PersistentFlags().StringVar(&configPath, "config", "", "Config file path")
 	rootCmd.PersistentFlags().StringVarP(&provider, "provider", "p", "", "LLM provider (gemini/openai/anthropic/ollama)")
 	rootCmd.PersistentFlags().StringVarP(&model, "model", "m", "", "Model name")
+	rootCmd.PersistentFlags().StringVar(&apiKey, "api-key", "", "API key for the provider")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Verbose output")
 	rootCmd.PersistentFlags().BoolVar(&noColor, "no-color", false, "Disable color output")
 
@@ -83,7 +85,7 @@ var nonInteractiveCmd = &cobra.Command{
 Examples:
   ai-terminal ask "What is Go programming language?"
   ai-terminal ask -p gemini "Explain quantum computing"
-  ai-terminal ask --model gpt-4 "Write a hello world program"`,
+  ai-terminal ask --api-key YOUR_KEY "Hello"`,
 	Args: cobra.MinimumNArgs(1),
 	RunE:  runNonInteractive,
 }
@@ -186,6 +188,16 @@ func runInteractive(cmd *cobra.Command, args []string) error {
 	if model != "" {
 		cfg.Provider.Model = model
 	}
+	if apiKey != "" {
+		switch cfg.Provider.Default {
+		case "gemini":
+			cfg.Provider.Gemini.APIKey = apiKey
+		case "openai":
+			cfg.Provider.OpenAI.APIKey = apiKey
+		case "anthropic":
+			cfg.Provider.Anthropic.APIKey = apiKey
+		}
+	}
 
 	providerFactory := providers.NewFactory(cfg)
 	providerClient, err := providerFactory.Create(cfg.Provider.Default)
@@ -241,6 +253,16 @@ func runNonInteractive(cmd *cobra.Command, args []string) error {
 	}
 	if model != "" {
 		cfg.Provider.Model = model
+	}
+	if apiKey != "" {
+		switch cfg.Provider.Default {
+		case "gemini":
+			cfg.Provider.Gemini.APIKey = apiKey
+		case "openai":
+			cfg.Provider.OpenAI.APIKey = apiKey
+		case "anthropic":
+			cfg.Provider.Anthropic.APIKey = apiKey
+		}
 	}
 
 	providerFactory := providers.NewFactory(cfg)
@@ -364,6 +386,17 @@ func runShell(cmd *cobra.Command, args []string) error {
 	cfg, err := config.Load(configPath)
 	if err != nil {
 		return err
+	}
+
+	if apiKey != "" {
+		switch cfg.Provider.Default {
+		case "gemini":
+			cfg.Provider.Gemini.APIKey = apiKey
+		case "openai":
+			cfg.Provider.OpenAI.APIKey = apiKey
+		case "anthropic":
+			cfg.Provider.Anthropic.APIKey = apiKey
+		}
 	}
 
 	providerFactory := providers.NewFactory(cfg)
