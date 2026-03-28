@@ -5,41 +5,45 @@ Enterprise-level AI terminal agent built with Go. A powerful CLI tool that bring
 ## Features
 
 - **Multiple LLM Providers**: Support for Google Gemini, OpenAI GPT, Anthropic Claude, and Ollama (local)
-- **25+ Built-in Tools**: Shell execution, file operations, web search, code analysis, and more
-- **Plan Mode**: Analyze complex tasks before execution
+- **60+ Built-in Tools**: Shell, File, Git, Docker, Network, Dev, Web, System, AI/ML tools
+- **Interactive TUI**: Modern terminal UI built with Bubble Tea
 - **Session Persistence**: Save and resume conversations
-- **MCP Support**: Model Context Protocol integration
-- **Enterprise-Grade Security**: Sandboxed execution, rate limiting, audit logging
-- **Beautiful TUI**: Modern terminal UI built with Bubble Tea
+- **Tool Calling Loop**: ReAct pattern for AI function calling
 - **Streaming Responses**: Real-time AI output
-- **Cross-Platform**: Works on Linux, macOS, Windows, and Termux (Android)
+- **Pure Go**: Lightweight, fast, cross-platform
+- **Termux Ready**: ARM64 binary for Android
 
 ## Installation
-
-### Quick Install
-
-```bash
-go install github.com/ai-terminal/ai-terminal@latest
-```
-
-### Build from Source
-
-```bash
-git clone https://github.com/ai-terminal/ai-terminal.git
-cd ai-terminal
-make build
-./bin/ai-terminal
-```
 
 ### Termux (Android)
 
 ```bash
-pkg update
-pkg install golang git
-git clone https://github.com/ai-terminal/ai-terminal.git
+pkg update && pkg install golang git
+git clone https://github.com/Nirmal09809/ai-terminal.git
 cd ai-terminal
-make build
-./bin/ai-terminal
+go build -o bin/ai-terminal ./cmd/ai-terminal
+./bin/ai-terminal config create
+export GEMINI_API_KEY="your-api-key-here"
+./bin/ai-terminal ask "hello"
+```
+
+### Linux/macOS
+
+```bash
+git clone https://github.com/Nirmal09809/ai-terminal.git
+cd ai-terminal
+go build -o bin/ai-terminal ./cmd/ai-terminal
+./bin/ai-terminal config create
+export GEMINI_API_KEY="your-api-key-here"
+./bin/ai-terminal ask "hello"
+```
+
+### Windows
+
+```bash
+git clone https://github.com/Nirmal09809/ai-terminal.git
+cd ai-terminal
+go build -o bin/ai-terminal.exe ./cmd/ai-terminal
 ```
 
 ## Configuration
@@ -51,15 +55,18 @@ On first run, a default config is created at `~/.ai-terminal/config.yaml`
 #### Gemini (Recommended - Free Tier Available)
 
 ```yaml
-provider: gemini
-
-providers:
+provider:
+  default: gemini
   gemini:
     api_key: "YOUR_GEMINI_API_KEY"
-    model: "gemini-2.0-flash"
 ```
 
 Get your API key from: https://aistudio.google.com/app/apikey
+
+Or set environment variable:
+```bash
+export GEMINI_API_KEY="your-key-here"
+```
 
 #### OpenAI
 
@@ -120,24 +127,40 @@ ai-terminal ask "Explain what Go is"
 | `ai-terminal completion bash` | Generate bash completion |
 | `ai-terminal version` | Show version |
 
-## Tools
+## Tools (60+)
 
-| Tool | Description |
-|------|-------------|
-| `shell` | Execute shell commands |
-| `read` | Read file contents |
-| `write` | Write content to files |
-| `edit` | Make targeted edits |
-| `glob` | Find files by pattern |
-| `grep` | Search in files |
-| `search` | Web search |
-| `fetch` | Fetch URL content |
-| `ask_user` | Ask questions |
-| `todo` | Manage todo list |
-| `memory` | Persistent storage |
-| `analyze` | Code analysis |
-| `explain` | Explain concepts |
-| `review` | Code review |
+### File Tools (9)
+read, write, edit, delete, mkdir, cp, mv, chmod, stat
+
+### Search Tools (5)
+glob, grep, find, locate, ripgrep
+
+### Shell Tools (4)
+shell, bash, sudo, exec
+
+### Git Tools (7)
+git, git_status, git_log, git_diff, git_commit, git_push, git_pull
+
+### Docker Tools (5)
+docker, docker_ps, docker_images, docker_run, docker_logs
+
+### Web Tools (4)
+search, fetch, scrape, curl
+
+### System Tools (8)
+system, cpu, memory, disk, process, top, uptime, whoami
+
+### Network Tools (6)
+ping, nslookup, netstat, wget, ssh, scp
+
+### Dev Tools (8)
+npm, pip, go, cargo, build, test, lint, format
+
+### AI/ML Tools (6)
+analyze, explain, review, refactor, test_gen, doc_gen
+
+### Utility Tools (7)
+todo, note, calc, hash, encode, decode, date
 
 ## Keyboard Shortcuts
 
